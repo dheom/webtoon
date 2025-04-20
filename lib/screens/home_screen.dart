@@ -20,13 +20,26 @@ class HomeScreen extends StatelessWidget {
         foregroundColor: Colors.green,
       ),
       body: FutureBuilder(
+        //많은 양의 데이터를 보여줄때는 column,row를 사용하지않고 ListView.builder를 사용해야함
         future: webtoons,
         builder: (context, snapshot) {
           //snapshot은 futurebuilder의 결과값을 담고있음
           if (snapshot.hasData) {
-            return Text('There is data');
+            return ListView.separated(
+              //ListView.separated는 ListView.builder와 비슷하지만 아이템사이에 구분선(위젯)을 넣을수있음
+              scrollDirection: Axis.horizontal,
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) {
+                //한번에 로딩하지않고 필요한 만큼만 로딩함
+                var webtoon = snapshot.data![index];
+                return Text(webtoon.title);
+              },
+              separatorBuilder: (context, index) => SizedBox(
+                width: 20,
+              ),
+            );
           }
-          return const Text("data is loading");
+          return Center(child: CircularProgressIndicator()); //로딩중일때 보여줄 위젯
         },
       ),
     );
