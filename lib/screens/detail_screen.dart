@@ -1,6 +1,11 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 
-class DetailScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:webtoon/models/webtoon_detail_model.dart';
+import 'package:webtoon/models/webtoon_episode_model.dart';
+import 'package:webtoon/services/api_service.dart';
+
+class DetailScreen extends StatefulWidget {
   final String title, tumb, id;
 
   const DetailScreen({
@@ -11,14 +16,29 @@ class DetailScreen extends StatelessWidget {
   });
 
   @override
+  State<DetailScreen> createState() => _DetailScreenState();
+}
+
+class _DetailScreenState extends State<DetailScreen> {
+  late Future<WebtoonDetailModel> webtoon;
+  late Future<List<WebtoonEpisodeModel>> episodes;
+
+  @override
+  void initState() {
+    super.initState();
+    webtoon = ApiService.getToonById(widget.id);
+    episodes = ApiService.getLatestEpisodesById(widget.id);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title), centerTitle: true),
+      appBar: AppBar(title: Text(widget.title), centerTitle: true),
       body: Center(
         child: Column(
           children: [
             Hero(
-              tag: id,
+              tag: widget.id,
               child: Container(
                 width: 250,
                 clipBehavior: Clip.hardEdge,
@@ -33,17 +53,49 @@ class DetailScreen extends StatelessWidget {
                   ],
                 ),
                 child: Image.network(
-                  tumb,
+                  widget.tumb,
                   headers: const {'Referer': 'https://comic.naver.com'},
                   //fit: BoxFit.cover,
                 ),
               ),
             ),
-            SizedBox(height: 10),
-            Text(
-              title,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+            SizedBox(height: 50),
+
+            FutureBuilder(
+              future: webtoon,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 50),
+                    child: Column(
+                      
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          snapshot.data!.about,
+                          //여러 정보 가져오자
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          '${snapshot.data!.genre} / ${snapshot.data!.age}',
+                          //여러 정보 가져오자
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return Text("Loading...");
+              },
             ),
+            SizedBox(height: 50),
+            FutureBuilder(future: episodes,
+             builder: (context, snapshot) {
+              
+             }
+            
+            )
           ],
         ),
       ),
